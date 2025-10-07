@@ -13,19 +13,20 @@ This application automatically classifies IT tickets into categories (Hardware, 
 and suggests the best resolution based on past incidents.
 """)
 
-
 # Input ticket text
-ticket_text = st.text_area("Enter IT Ticket Text:")
-
-if st.button("Predict"):
-    if ticket_text.strip() == "":
-        st.warning("Please enter some text.")
+ticket_text = st.text_area("Enter IT Ticket Text:", height=150)
+if st.button("Classify & Suggest Resolution"):
+    if ticket_text.strip() != "":
+        # Transform text
+        X_input = tfidf_vect.transform([ticket_text])
+        
+        # Predict category
+        category = pipe.predict(X_input)[0]
+        
+        # Dummy resolution suggestion (replace with real logic)
+        resolution = f"Suggested steps for {category}"
+        
+        st.success(f"**Predicted Category:** {category}")
+        st.info(f"**Suggested Resolution:** {resolution}")
     else:
-        # Transform text and predict category
-        category = model.predict([ticket_text])[0]
-        st.success(f"Predicted Category: {category}")
-
-        # Optional: show a mock resolution (replace with real past data lookup)
-        st.info("Suggested Resolution: Please refer to the IT knowledge base for similar tickets.")
-
-
+        st.warning("Please enter a ticket text to classify.")
