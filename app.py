@@ -8,6 +8,11 @@ model = joblib.load("it_ticket_classifier.pkl")
 tfidf = joblib.load("tfidf_vectorizer.pkl")
 
 st.title("AI-Based IT Ticket Classifier & Resolution Suggestion")
+st.write("""
+This application automatically classifies IT tickets into categories (Hardware, Software, Network, etc.) 
+and suggests the best resolution based on past incidents.
+""")
+
 
 # Input ticket text
 ticket_text = st.text_area("Enter IT Ticket Text:")
@@ -22,4 +27,5 @@ if st.button("Predict"):
 
         # Optional: show a mock resolution (replace with real past data lookup)
         st.info("Suggested Resolution: Please refer to the IT knowledge base for similar tickets.")
+
 
