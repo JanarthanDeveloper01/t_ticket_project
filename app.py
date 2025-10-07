@@ -1,10 +1,25 @@
 import streamlit as st
 import joblib
+import re
 
-# Load the pipeline (TF-IDF + Logistic Regression)
+# Load trained pipeline
 pipe = joblib.load("it_ticket_classifier.pkl")
 
-# Detailed solutions for each category
+# Define keywords for each category
+keywords_dict = {
+    "Technical Support": ["error", "crash", "bug", "issue", "restart", "network", "login"],
+    "Product Support": ["install", "update", "software", "feature", "problem", "version", "configuration"],
+    "Customer Service": ["complaint", "request", "feedback", "support", "assistance", "help"],
+    "IT Support": ["server", "network", "permission", "access", "IT", "system"],
+    "Billing and Payments": ["payment", "invoice", "billing", "charge", "refund", "transaction"],
+    "Returns and Exchanges": ["return", "exchange", "warranty", "replacement", "policy"],
+    "Service Outages and Maintenance": ["outage", "maintenance", "down", "update", "issue", "service"],
+    "Sales and Pre-Sales": ["price", "quote", "demo", "product", "pre-sale", "offer", "availability"],
+    "Human Resources": ["leave", "payroll", "policy", "HR", "benefits", "recruitment"],
+    "General Inquiry": ["question", "information", "clarification", "general", "inquiry"]
+}
+
+# Define detailed solutions for each category
 solution_dict = {
     "Technical Support": (
         "1. Restart the device and check if the issue persists.\n"
@@ -69,7 +84,7 @@ solution_dict = {
 }
 
 # Streamlit UI
-st.title("AI-Based IT Ticket Classifier & Resolution Suggestion")
+st.title("AI-Based IT Ticket Classifier & Smart Suggestions")
 
 ticket_text = st.text_area("Enter IT Ticket Text:")
 
@@ -78,14 +93,21 @@ if st.button("Predict"):
         st.error("Please enter a ticket text to predict!")
     else:
         try:
-            # Pass raw text directly to the pipeline
+            # Predict category
             prediction = pipe.predict([ticket_text])[0]
-
-            # Get the detailed solution
             solution = solution_dict.get(prediction, "No solution available.")
 
             st.success(f"Predicted Category: {prediction}")
             st.info(f"Suggested Solution:\n{solution}")
+
+            # Highlight keywords
+            keywords = keywords_dict.get(prediction, [])
+            highlighted_text = ticket_text
+            for kw in keywords:
+                highlighted_text = re.sub(f"({kw})", r"<mark>\1</mark>", highlighted_text, flags=re.IGNORECASE)
+
+            st.markdown("### Ticket Text with Highlighted Keywords")
+            st.markdown(highlighted_text, unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"Error during prediction: {e}")
