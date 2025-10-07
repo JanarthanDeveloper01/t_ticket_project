@@ -15,9 +15,9 @@ ticket_text = st.text_area(
 )
 
 if st.button("Classify Ticket"):
-    if ticket_text.strip() != "":
-        # Transform input text using loaded TF-IDF vectorizer
-        X_input = tfidf_vect.transform([ticket_text])
+    if ticket_text and ticket_text.strip() != "":
+        # Ensure input is a string
+        X_input = tfidf_vect.transform([str(ticket_text)])
         
         # Predict category
         prediction = pipe.predict(X_input)[0]
