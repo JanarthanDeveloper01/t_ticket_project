@@ -1,69 +1,36 @@
-# app.py
-
 import streamlit as st
 import joblib
 
-# ----------------------------
-# Load trained models
-# ----------------------------
-try:
-    pipe = joblib.load("it_ticket_classifier.pkl")       # Classifier pipeline
-    tfidf_vect = joblib.load("tfidf_vectorizer.pkl")     # TF-IDF vectorizer
-except FileNotFoundError:
-    st.error("Model files not found. Ensure 'it_ticket_classifier.pkl' and 'tfidf_vectorizer.pkl' are in the same folder as app.py.")
-    st.stop()
-
-# ----------------------------
-# Streamlit UI
-# ----------------------------
-st.set_page_config(
-    page_title="AI IT Ticket Classifier",
-    page_icon="🖥️",
-    layout="centered",
-    initial_sidebar_state="expanded",
-)
-
+# Title
 st.title("AI-Based IT Ticket Classifier & Resolution Suggestion")
-st.write("""
-This application classifies IT support tickets into categories
-and suggests possible actions based on the ticket content.
-""")
+st.write("Enter the IT ticket text below and click Predict to get the category.")
 
-# Input: Ticket Text
-ticket_text = st.text_area("Enter IT Ticket Text:", height=200)
+# Load the trained pipeline
+try:
+    pipe = joblib.load("it_ticket_classifier.pkl")  # This should be your Pipeline (TF-IDF + LogisticRegression)
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    st.stop()  # Stop the app if model fails to load
 
-# Button: Classify Ticket
-if st.button("Classify Ticket"):
-    
-    if ticket_text and ticket_text.strip() != "":
+# Text input for the ticket
+ticket_text = st.text_area("Enter IT Ticket Text:")
+
+# Predict button
+if st.button("Predict Category"):
+    if ticket_text.strip() == "":
+        st.warning("Please enter the ticket text to predict.")
+    else:
         try:
-            # Ensure input is string
-            X_input = tfidf_vect.transform([str(ticket_text)])
-            
-            # Predict category
-            prediction = pipe.predict(X_input)[0]
-            
-            st.success(f"**Predicted Category:** {prediction}")
-            
-            # Optionally, you can add sample resolution suggestions
-            suggestions = {
-                "Technical Support": "Check system logs and remote into user machine if necessary.",
-                "Product Support": "Review product documentation and provide troubleshooting steps.",
-                "Customer Service": "Respond with polite acknowledgement and escalate if needed.",
-                "IT Support": "Verify user credentials and network access.",
-                "Billing and Payments": "Check invoice and payment history; escalate to finance team.",
-                "Returns and Exchanges": "Provide RMA instructions and return label.",
-                "Service Outages and Maintenance": "Notify affected users and provide estimated resolution time.",
-                "Sales and Pre-Sales": "Provide product information and sales support contact.",
-                "Human Resources": "Refer to HR team for employee-related queries.",
-                "General Inquiry": "Respond with standard FAQ or route to correct department."
-            }
-            
-            # Show suggestion
-            st.info(f"**Suggested Action:** {suggestions.get(prediction, 'No suggestion available.')}")
-        
+            # Predict using the pipeline directly (no separate TF-IDF transform needed)
+            prediction = pipe.predict([ticket_text])[0]
+            st.success(f"Predicted Category: {prediction}")
         except Exception as e:
             st.error(f"Error during prediction: {e}")
-    
-    else:
-        st.warning("Please enter some ticket text to classify.")
+
+# Optional: Add instructions or info
+st.write("""
+**Instructions:**
+- Enter the full text of the IT ticket in the box above.
+- Click 'Predict Category' to see the predicted category.
+- Make sure the trained model (`it_ticket_classifier.pkl`) is in the same folder as this app.py.
+""")
